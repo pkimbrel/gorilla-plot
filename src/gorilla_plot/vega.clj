@@ -147,7 +147,15 @@
                                  :fill          {:value "black"}
                                  :fontSize      {:value 12}
                                  :align         {:value "left"}}
-                         :update {:text         {:signal "title"}}}}
+                         :update {:text         {:signal "value"}}}}
+           {:type          "text",
+            :interactive   false,
+            :properties {:enter {:x             {:value 0}
+                                 :y             {:value 22}
+                                 :fill          {:value "black"}
+                                 :fontSize      {:value 12}
+                                 :align         {:value "left"}}
+                         :update {:text         {:signal "name"}}}}
            ]
     :signals [
         {:name "hover"
@@ -162,7 +170,7 @@
                 :expr nil
             }
          ]}
-        {:name "title"
+        {:name "value"
          :init map-key
          :streams [
             {
@@ -170,6 +178,14 @@
                 :expr (str "hover ? hover.value.value : '" map-key "'")
             }
          ]}
+              {:name "name"
+               :init ""
+               :streams [
+                         {
+                          :type "hover"
+                          :expr (str "hover ? hover.value.name : ''")
+                          }
+                         ]}
         ]})
 
 (defn choropleth-scales

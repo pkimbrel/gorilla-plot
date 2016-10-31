@@ -114,7 +114,7 @@
 
 (defn choropleth-plot
     "Plot the choropleth of a sample."
-  [data & {:keys [plot-size aspect-ratio data-id data-key map-url map-topology map-key map-projection map-center map-scale map-translate map-domain-mid map-min-color map-colors map-range]
+  [data & {:keys [plot-size aspect-ratio data-id data-key map-url map-topology map-key map-projection map-center map-scale map-translate map-domain-mid map-min-color map-colors map-domain]
            :or   {plot-size      650
                   aspect-ratio   1.8
                   data-id        "id"
@@ -146,12 +146,12 @@
                                  (cond (= (count map-colors) 3)
                                        [(apply min (map (keyword data-key) data))
                                         map-domain-mid
-                                        (apply max (map (keyword data-key) data))]
+                                       (apply max (map (keyword data-key) data))]
                                        :else
                                        [(apply min (map (keyword data-key) data))
                                         (apply max (map (keyword data-key) data))]
                                        )
-                                 :else map-colors)
+                                 :else map-domain)
         ]
 
       (v/vega-view (merge
@@ -181,8 +181,3 @@
     (v/vega-view
      {:width width :height height :padding padding :scales scales :axes axes :data data :marks marks})))
 
-(def red {:red 255 :green 0 :blue 0})
-(def green {:red 0 :green 255 :blue 0})
-(def blue {:red 0 :green 0 :blue 0})
-(def black {:red 0 :green 0 :blue 0})
-(def white {:red 255 :green 255 :blue 255})
