@@ -112,6 +112,65 @@
                         (vega/default-list-plot-scales series-name plot-range)
                         (vega/default-plot-axes x-title y-title))))))
 
+(defn choropleth-plot
+    "Plot the choropleth of a sample."
+  [data & {:keys [plot-size aspect-ratio data-id data-key map-url map-topology map-key map-projection map-center map-scale map-translate map-domain-mid map-min-color map-colors map-range]
+           :or   {plot-size      650
+                  aspect-ratio   1.8
+                  data-id        "id"
+                  data-key       "value"
+                  map-url        nil
+                  map-topology   "us-10m"
+                  map-key        "counties"
+                  map-projection "albersUsa"
+                  map-center     [0 0]
+                  map-scale      850
+                  map-translate  [325, 180]
+                  map-domain-mid 0
+                  map-colors     ["#f7fbff" "#08306b"]
+                  map-domain     nil
+                  }}]
+
+
+    (let [map-final-topology (cond
+            (= map-url nil) (str "jslib/vega/topology/" map-topology ".json")
+            :else map-url)
+          plot-scale (/ plot-size 650.0)
+          map-topo-keyword (keyword map-topology)
+          map-final-center (cond (= map-url nil) (get (get util/state-data map-topo-keyword) :center))
+          map-final-key (cond (= map-url nil) (get (get util/state-data map-topo-keyword) :key))
+          map-final-projection (cond (= map-url nil) (get (get util/state-data map-topo-keyword) :projection))
+          map-final-scale (cond (= map-url nil) (* (get (get util/state-data map-topo-keyword) :scale) plot-scale))
+          map-final-translate [(* (get map-translate 0) plot-scale) (* (get map-translate 1) plot-scale) ]
+          map-color-domain (cond (= map-domain nil)
+                                 (cond (= (count map-colors) 3)
+                                       [(apply min (map (keyword data-key) data))
+                                        map-domain-mid
+                                        (apply max (map (keyword data-key) data))]
+                                       :else
+                                       [(apply min (map (keyword data-key) data))
+                                        (apply max (map (keyword data-key) data))]
+                                       )
+                                 :else map-colors)
+        ]
+
+      (v/vega-view (merge
+        (vega/container plot-size aspect-ratio)
+        (vega/choropleth-data data
+                              data-id
+                              data-key
+                              map-final-topology
+                              map-final-key
+                              map-final-projection
+                              map-final-center
+                              map-final-scale
+                              map-final-translate)
+        (vega/choropleth-marks data-key map-final-key)
+        (vega/choropleth-scales data
+                                map-color-domain
+                                map-colors)
+        ))))
+
 (defn compose
   [& plots]
   (let [plot-data (map vega/from-vega plots)
@@ -120,4 +179,10 @@
         data (apply concat (map :data plot-data))
         marks (apply concat (map :marks plot-data))]
     (v/vega-view
-      {:width width :height height :padding padding :scales scales :axes axes :data data :marks marks})))
+     {:width width :height height :padding padding :scales scales :axes axes :data data :marks marks})))
+
+(def red {:red 255 :green 0 :blue 0})
+(def green {:red 0 :green 255 :blue 0})
+(def blue {:red 0 :green 0 :blue 0})
+(def black {:red 0 :green 0 :blue 0})
+(def white {:red 255 :green 255 :blue 255})

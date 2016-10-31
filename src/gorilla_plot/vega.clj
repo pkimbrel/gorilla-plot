@@ -127,6 +127,81 @@
                                  :strokeOpacity {:value opacity}
                                  }}}]})
 
+;;; Choropleth
+
+(defn choropleth-marks
+  [data-key map-key]
+  {:marks [{:type       "path",
+            :name       "cell"
+            :from       {:data map-key}
+            :properties {:enter {:path          {:field "layout_path"}
+                                 :stroke        {:value "black"}
+                                 :strokeWidth   {:value 0.5}}
+                        :update {:fill          {:scale "color" :field (str data-key "." data-key)}}
+                        :hover  {:fill          {:value "red"}}
+                         }}
+           {:type          "text",
+            :interactive   false,
+            :properties {:enter {:x             {:value 0}
+                                 :y             {:value 10}
+                                 :fill          {:value "black"}
+                                 :fontSize      {:value 12}
+                                 :align         {:value "left"}}
+                         :update {:text         {:signal "title"}}}}
+           ]
+    :signals [
+        {:name "hover"
+         :init nil
+         :streams [
+            {
+                :type "@cell:mouseover"
+                :expr "datum"
+            }
+            {
+                :type "@cell:mouseout"
+                :expr nil
+            }
+         ]}
+        {:name "title"
+         :init map-key
+         :streams [
+            {
+                :type "hover"
+                :expr (str "hover ? hover.value.value : '" map-key "'")
+            }
+         ]}
+        ]})
+
+(defn choropleth-scales
+    [data domain range]
+  {:scales [{:name   "color"
+             :type   "linear"
+             :domain domain
+             :range  range
+            }]})
+
+(defn choropleth-data
+    [data data-id data-key map-topology map-key map-projection map-center map-scale map-translate]
+    {:data [{:name data-key
+             :values data}
+            {:name map-key
+             :url map-topology
+             :format {:feature map-key :type "topojson"}
+             :transform [
+                {:type "geopath"
+                 :projection map-projection
+                 :center map-center
+                 :scale map-scale
+                 :translate map-translate}
+                {:type "lookup"
+                  :on data-key
+                  :onKey data-id
+                  :keys [data-id]
+                  :as [data-key]}
+                {:type "filter"
+                  :test (str "datum.layout_path!=null && datum." data-key "!=null")}]}
+        ]})
+
 (defn from-vega
   [g]
   (:content g))
