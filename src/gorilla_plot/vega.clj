@@ -138,7 +138,7 @@
                                  :stroke        {:value "black"}
                                  :strokeWidth   {:value 0.5}}
                         :update {:fill          {:scale "color" :field (str data-key "." data-key)}}
-                        :hover  {:fill          {:value "red"}}
+                        :hover  {:fill          {:value "purple"}}
                          }}
            {:type          "text",
             :interactive   false,
